@@ -1,13 +1,58 @@
-const Home: React.FC = () => {
-  return (
-    <div className="bg-gray-100 min-h-screen flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome to Next.js with Tailwind CSS</h1>
-        <p className="text-gray-600">Start building your awesome app!</p>
-      </div>
-    </div>
+'use client'
+import { signIn } from "next-auth/react"
+import { useRouter } from "next/navigation"
+import { SyntheticEvent, useState } from "react"
 
+export default function Home() {
+  const [email, setEmail] = useState<string>('')
+  const [password, setPassword] = useState<string>('')
+
+  const router = useRouter()
+
+  async function handleSubmit(event: SyntheticEvent){
+    event.preventDefault()
+
+    const result = await signIn('crendentials', {
+      email,
+      password,
+      redirect: false
+    })
+
+    if(result?.error){
+      console.log(result)
+      return
+    }
+
+    router.replace('/admin')
+  }
+  return (
+    <div className="flex flex-col items-center justify-center w-full h-screen">
+        <h1 className="text-3xl mb-6">Login</h1>
+
+        <form className="w-[400px] flex flex-col gap-6" onSubmit={handleSubmit}>
+          <input 
+            className="h-12 rounded-md p-2 bd-transparent border border-gray-300"
+            type="text" 
+            name="email"
+            placeholder="Digite seu e-mail"
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <input 
+            className="h-12 rounded-md p-2 bd-transparent border border-gray-300"
+            type="password" 
+            name="password"
+            placeholder="Digite sua senha"
+            onChange={(e) => setPassword(e.target.value)}
+          />
+
+          <button
+            type="submit"
+            className="h-12 rounded-md bg-gray-300 text-gray-800 hover:bg-gray-400"
+          >
+            Entrar
+          </button>
+        </form>
+    </div>
   )
 }
-
-export default Home
