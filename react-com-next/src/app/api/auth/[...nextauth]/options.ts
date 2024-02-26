@@ -17,29 +17,30 @@ export const options: NextAuthOptions = {
                     placeholder: "Digite sua Senha",
                 },
             },
-            async authorize(credentials) {
-                const email = credentials?.email;
-                const senha = credentials?.password; // Corrigindo para acessar o campo de senha
+            async authorize(credentials, req) {
 
                 try {
                     const response = await fetch(
-                        `http://localhost:3003/login`,
+                        "http://localhost:3003/login",
                         {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
                             },
-                            body: JSON.stringify({ email, senha })
+                            body: JSON.stringify({ 
+                                email: credentials?.email,
+                                senha: credentials?.password
+                            })
                         }
                     );
 
-                    const data = await response.json();
-                    if (response.ok) {
+                    const user = await response.json();
+                    if (user) {
                         // Se a resposta for bem-sucedida, retornamos os dados do usuário
-                        return Promise.resolve(data);
+                        return user
                     } else {
                         // Se houver erro na resposta, lançamos um erro com a mensagem retornada pela API
-                        throw new Error(data.message || "Erro desconhecido");
+                        throw new Error("Erro desconhecido: " + user.message)
                     }
                 } catch (error) {
                     // Se houver algum erro na requisição, lançamos um erro
@@ -47,5 +48,15 @@ export const options: NextAuthOptions = {
                 }
             }
         })
-    ]
+    ],
+    callbacks:{
+        async jwt({token, user}){
+            return {...token, ...user}
+        },
+        async session({session, token, user}){
+            session.user = token as any
+            return session
+        },
+
+    }
 };
